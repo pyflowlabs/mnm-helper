@@ -156,6 +156,8 @@
   .maphint{font-size:12px;color:var(--ink-dim);background:rgba(233,150,62,.07);
     border:1px solid var(--line);border-radius:7px;padding:7px 11px;margin:-2px 0 0}
   .maphint b{color:var(--gold-hi);font-weight:600}
+  .guidepdf{width:100%;height:74vh;min-height:420px;border:1px solid var(--gold-dim);
+    border-radius:var(--radius);background:#0d0a07;margin-top:6px}
   #mapframe{flex:1 1 auto;width:100%;border:1px solid var(--gold-dim);border-radius:var(--radius);
     background:#0d0a07;box-shadow:0 14px 40px -24px rgba(0,0,0,.8)}
 
@@ -462,6 +464,17 @@ function render(){
 function clearDetail(){ $("#detail").innerHTML='<div class="empty">Select an entry.</div>'; }
 function renderDetail(obj,cat){
   const d=$("#detail");
+  if(cat==="guides" && obj.url){
+    const isPdf=/\.pdf(\?|#|$)/i.test(obj.url);
+    d.innerHTML =
+      `<div class="dcat">Class Guide</div>
+       <h1>${esc(obj.class||titleOf(obj))}</h1>
+       ${obj.note?`<div class="dsub"><span style="color:var(--ink-faint)">${esc(obj.note)}</span></div>`:""}
+       <div class="dsub"><a class="btn" href="${esc(obj.url)}" target="_blank" rel="noopener">Open guide${isPdf?" (PDF)":""} &#8599;</a></div>
+       ${isPdf?`<embed class="guidepdf" src="${esc(obj.url)}#view=FitH" type="application/pdf">`
+              :`<div style="color:var(--ink-faint);font-size:13px">Opens in a new tab.</div>`}`;
+    return;
+  }
   const slug=zoneSlugFor(obj.zone || obj.where || "");
   const mapBtn = slug
     ? `<button class="mapbtn" onclick="showMap(${zoneIndexForSlug(slug)})">Show on map &#8599;</button>` : "";

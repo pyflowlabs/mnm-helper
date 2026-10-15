@@ -23,11 +23,13 @@
   "guides": [
     {
       "class": "Elementalist",
-      "url": "https://claude.ai/code/artifact/55a2ab7b-52a9-4c90-9ad8-e530babe3b25"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/elementalist.pdf",
+      "format": "PDF"
     },
     {
       "class": "Wizard",
-      "url": "https://claude.ai/code/artifact/cdc7fff0-92e6-4ea3-9864-752d07f9464c"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/wizard.pdf",
+      "format": "PDF"
     },
     {
       "class": "Druid",
@@ -35,23 +37,34 @@
     },
     {
       "class": "Ranger",
-      "url": "https://claude.ai/code/artifact/3d922df2-b296-43d3-9b04-0e5076ce5559"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/ranger.pdf",
+      "format": "PDF"
     },
     {
       "class": "Necromancer",
-      "url": "https://claude.ai/code/artifact/491b835a-a3ec-4091-970b-c638b051bba9"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/necromancer.pdf",
+      "format": "PDF"
     },
     {
       "class": "Shadow Knight",
-      "url": "https://claude.ai/code/artifact/d661c8b7-d196-46f7-bffd-fda998692f6b"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/shadow-knight.pdf",
+      "format": "PDF"
     },
     {
       "class": "Fighter",
-      "url": "https://claude.ai/code/artifact/95c8f996-a78e-4021-9c90-ba968c63ff1b"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/fighter.pdf",
+      "format": "PDF"
     },
     {
       "class": "Bard",
-      "url": "https://claude.ai/code/artifact/c95fcf21-9741-4415-8c95-d39f1c7e0e3a"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/bard.pdf",
+      "format": "PDF"
+    },
+    {
+      "class": "Ranger (Underdocks)",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/ranger-underdocks.pdf",
+      "format": "PDF",
+      "note": "Underdocks-specific supplement"
     }
   ],
   "vendors": [
