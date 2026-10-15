@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M&amp;M Helper</title>
+<style>
+  :root{
+    --bg:#14110d; --bg2:#1c1811; --panel:#211c15; --panel2:#2a2318;
+    --line:#3a3123; --line2:#4a3f2c;
+    --ink:#ede3cf; --ink-dim:#b9ac92; --ink-faint:#8a7d64;
+    --gold:#d9b25a; --gold-dim:#a98a3f;
+    --accent:#6fa8a0; --accent2:#c98a4a;
+    --ok:#7bb36a; --warn:#d7a84b; --info:#6f9bd1; --mut:#9a8f78;
+    --radius:9px; --mono:'Consolas','SF Mono',Menlo,monospace;
+    --sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:
+      radial-gradient(1200px 600px at 80% -10%, #241d13 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+  /* Header */
+  header{flex:0 0 auto;background:linear-gradient(180deg,#241d12,#1b160f);
+    border-bottom:1px solid var(--line2);padding:10px 16px;display:flex;
+    align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;line-height:1.1}
+  .brand .t{font-size:19px;font-weight:700;color:var(--gold);letter-spacing:.3px}
+  .brand .s{font-size:11px;color:var(--ink-faint)}
+  .searchwrap{flex:1 1 320px;position:relative;min-width:200px}
+  #search{width:100%;padding:9px 12px 9px 34px;background:var(--panel);
+    border:1px solid var(--line2);border-radius:var(--radius);color:var(--ink);
+    font-size:15px;outline:none}
+  #search:focus{border-color:var(--gold-dim)}
+  .searchwrap::before{content:"";position:absolute;left:11px;top:50%;width:14px;height:14px;
+    margin-top:-9px;border:2px solid var(--ink-faint);border-radius:50%}
+  .searchwrap::after{content:"";position:absolute;left:21px;top:50%;width:7px;height:2px;
+    margin-top:3px;background:var(--ink-faint);transform:rotate(45deg)}
+  .hbtns{display:flex;gap:8px;align-items:center}
+  button.btn{background:var(--panel2);border:1px solid var(--line2);color:var(--ink);
+    padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px}
+  button.btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+  select.flt{background:var(--panel2);border:1px solid var(--line2);color:var(--ink);
+    padding:8px 10px;border-radius:var(--radius);font-size:13px}
+
+  /* Layout */
+  .wrap{flex:1 1 auto;display:flex;min-height:0}
+  nav{flex:0 0 220px;background:var(--bg2);border-right:1px solid var(--line);
+    overflow-y:auto;padding:10px 8px}
+  nav .navitem{display:flex;justify-content:space-between;align-items:center;
+    padding:9px 11px;border-radius:7px;cursor:pointer;color:var(--ink-dim);font-size:14px}
+  nav .navitem:hover{background:var(--panel)}
+  nav .navitem.active{background:var(--panel2);color:var(--gold);
+    box-shadow:inset 2px 0 0 var(--gold)}
+  nav .navitem .cnt{font-size:11px;color:var(--ink-faint);background:#00000030;
+    padding:1px 7px;border-radius:10px}
+  nav .navsep{font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--ink-faint);padding:12px 11px 5px}
+
+  main{flex:1 1 auto;overflow-y:auto;padding:18px 22px}
+  .colwrap{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:18px;
+    align-items:start}
+  @media(max-width:860px){.colwrap{grid-template-columns:1fr}}
+
+  .listcol{min-width:0}
+  .listhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .listhead h2{margin:0;font-size:17px;color:var(--gold)}
+  .listhead .meta{font-size:12px;color:var(--ink-faint)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:border-color .1s}
+  .card:hover{border-color:var(--gold-dim)}
+  .card.sel{border-color:var(--gold);background:var(--panel2)}
+  .card .ct{font-weight:600;color:var(--ink);font-size:15px}
+  .card .cs{font-size:12.5px;color:var(--ink-dim);margin-top:2px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card .cat{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+
+  .detailcol{position:sticky;top:0}
+  .detail{background:var(--panel);border:1px solid var(--line2);border-radius:var(--radius);
+    padding:18px 20px;min-height:200px}
+  .detail .dcat{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+  .detail h1{font-size:22px;margin:4px 0 2px;color:var(--gold)}
+  .detail .dsub{color:var(--ink-dim);font-size:14px;margin-bottom:12px}
+  .empty{color:var(--ink-faint);text-align:center;padding:60px 20px}
+
+  /* key/value rendering */
+  .kv{margin:10px 0}
+  .kv .k{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-faint);
+    margin-bottom:3px}
+  .kv .v{color:var(--ink)}
+  table.sub{width:100%;border-collapse:collapse;margin:4px 0 2px;font-size:13.5px}
+  table.sub th,table.sub td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+  table.sub th{color:var(--ink-faint);font-weight:500;font-size:11px;text-transform:uppercase;
+    letter-spacing:.4px}
+  table.sub tr:hover td{background:#00000020}
+  ul.steps{margin:4px 0;padding-left:18px}
+  ul.steps li{margin:3px 0}
+  .obj{border-left:2px solid var(--line2);padding-left:12px;margin:6px 0}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .price{font-family:var(--mono);color:var(--gold)}
+  .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;
+    text-transform:uppercase;letter-spacing:.5px;font-weight:600;vertical-align:middle}
+  .b-ingame{background:#223b1f;color:#9fd98a;border:1px solid #3d6b35}
+  .b-official{background:#1f2f45;color:#8fb8e8;border:1px solid #37557d}
+  .b-wiki{background:#43371c;color:#e0c070;border:1px solid #6b5628}
+  .b-derived{background:#3a2a2a;color:#d9a0a0;border:1px solid #6b4040}
+  .b-unknown{background:#2a2a2a;color:#aaa;border:1px solid #444}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 10px}
+  .chip{font-family:var(--mono);font-size:11px;background:#00000030;border:1px solid var(--line);
+    padding:2px 8px;border-radius:6px;color:var(--ink-dim)}
+
+  /* toast / modal */
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--panel2);border:1px solid var(--gold-dim);color:var(--ink);
+    padding:11px 18px;border-radius:var(--radius);font-size:14px;opacity:0;
+    pointer-events:none;transition:opacity .25s;max-width:80%;z-index:50}
+  #toast.show{opacity:1}
+  .modal-bg{position:fixed;inset:0;background:#000000a0;display:none;
+    align-items:center;justify-content:center;z-index:40}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line2);border-radius:var(--radius);
+    padding:22px;width:440px;max-width:90%}
+  .modal h3{margin:0 0 6px;color:var(--gold)}
+  .modal p{color:var(--ink-dim);font-size:13px;margin:6px 0}
+  .modal input{width:100%;padding:9px;background:var(--bg2);border:1px solid var(--line2);
+    border-radius:7px;color:var(--ink);font-family:var(--mono);font-size:12px;margin:6px 0}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+  .src{font-size:11px;color:var(--ink-faint);margin-top:16px;border-top:1px solid var(--line);
+    padding-top:10px}
+  .src a{margin-right:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="t">Monsters &amp; Memories Helper</span>
+    <span class="s" id="metaline"></span>
+  </div>
+  <div class="searchwrap">
+    <input id="search" type="text" placeholder="Search everything (items, quests, songs, mobs, mechanics ...)" autocomplete="off">
+  </div>
+  <div class="hbtns">
+    <select class="flt" id="verfilter" title="Filter by verification">
+      <option value="">All sources</option>
+      <option value="ingame">In-game only</option>
+      <option value="official">Official only</option>
+      <option value="wiki">Wiki only</option>
+      <option value="derived">Derived only</option>
+    </select>
+    <button class="btn" id="updbtn" title="Check for updates from the master">Updates</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main>
+    <div class="colwrap">
+      <div class="listcol">
+        <div class="listhead">
+          <h2 id="listtitle"></h2>
+          <span class="meta" id="listmeta"></span>
+        </div>
+        <div id="list"></div>
+      </div>
+      <div class="detailcol">
+        <div class="detail" id="detail">
+          <div class="empty">Pick an entry on the left, or use the search box.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+<div class="modal-bg" id="modalbg">
+  <div class="modal">
+    <h3>Check for updates</h3>
+    <p>Update source (link to the master's <code>manifest.json</code>). Stored locally.</p>
+    <input id="updurl" type="text" placeholder="https://.../manifest.json">
+    <p id="updstatus" style="min-height:18px"></p>
+    <div class="row">
+      <button class="btn" id="updcancel">Close</button>
+      <button class="btn" id="updcheck">Check now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Data bootstrap. The build tool replaces __MNM_DATA__ with the
+   embedded JSON and __MNM_VERSION__ with the build version.
+   In dev (unbuilt) it falls back to fetching ../data/data.json.
+============================================================ */
+const EMBEDDED_DATA = __MNM_DATA__;
+const BUILD_VERSION = "__MNM_VERSION__";
+
+const LABELS = {
+  guides:"Guides", characters:"Characters", vendors:"Vendors", items:"Items",
+  armor_sets:"Armor Sets", bard_songs:"Bard Songs", quests:"Quests",
+  named_mobs:"Named Mobs", mechanics:"Mechanics", builds:"Builds"
+};
+const TITLE_FIELDS = ["name","song","ability","item","skill","topic","class","variant"];
+const SUB_FIELDS   = ["class","variant","zone","type","slot","level","fact","playstyle","effect","where"];
+
+let DATA = null, STATE = {cat:null, sel:null, q:"", ver:""};
+
+/* ---------- utilities ---------- */
+const $ = s => document.querySelector(s);
+const el = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2600);}
+
+function catLabel(k){return LABELS[k] || k.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());}
+function primaryTitleField(obj){
+  for(const f of TITLE_FIELDS) if(obj && obj[f]!=null) return f;
+  return null;
+}
+function titleOf(obj){
+  if(typeof obj!=="object"||!obj) return String(obj);
+  const f=primaryTitleField(obj);
+  if(!f) return "(unnamed)";
+  let t=String(obj[f]);
+  if(f==="class" && obj.variant) t=obj.class+" — "+obj.variant;
+  else if(f==="variant" && obj.class) t=obj.class+" — "+t;
+  return t;
+}
+function subOf(obj){
+  if(typeof obj!=="object"||!obj) return "";
+  const used=primaryTitleField(obj);
+  const parts=[];
+  for(const f of SUB_FIELDS){
+    if(f===used) continue;
+    if(f==="variant" && used==="class") continue;  // already folded into title
+    if(obj[f]!=null && parts.length<2) parts.push(String(obj[f]));
+  }
+  return parts.join(" · ");
+}
+function verOf(obj){
+  const v=(obj&&obj.verified||"").toLowerCase();
+  if(v.includes("ingame")) return "ingame";
+  if(v.includes("official")) return "official";
+  if(v.includes("wiki")) return "wiki";
+  if(v.includes("derived")) return "derived";
+  return "";
+}
+function verBadge(obj){
+  const raw=obj&&obj.verified; if(!raw) return "";
+  const v=verOf(obj);
+  return `<span class="badge b-${v||'unknown'}" title="${esc(raw)}">${esc(v||'?')}</span>`;
+}
+
+/* price highlighting: "6s 60cp", "25cp", "11s" */
+function fmtVal(s){
+  s=esc(s);
+  s=s.replace(/\b(\d+s(?:\s*\d+cp)?|\d+cp)\b/g,'<span class="price">$1</span>');
+  s=s.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+
+/* recursive renderer — handles unknown shapes, so new categories just work */
+function renderValue(v){
+  if(v==null) return "";
+  if(Array.isArray(v)){
+    if(v.length===0) return '<span style="color:var(--ink-faint)">—</span>';
+    if(v.every(x=>typeof x!=="object")){
+      return '<ul class="steps">'+v.map(x=>`<li>${fmtVal(x)}</li>`).join("")+'</ul>';
+    }
+    const keys=[...new Set(v.flatMap(o=>Object.keys(o||{})))];
+    if(keys.length<=6 && v.length>1){
+      let h='<table class="sub"><thead><tr>'+keys.map(k=>`<th>${esc(catLabel(k))}</th>`).join("")+'</tr></thead><tbody>';
+      for(const o of v){
+        h+='<tr>'+keys.map(k=>`<td>${o[k]==null?'':renderValue(o[k])}</td>`).join("")+'</tr>';
+      }
+      return h+'</tbody></table>';
+    }
+    return v.map(o=>`<div class="obj">${renderObj(o)}</div>`).join("");
+  }
+  if(typeof v==="object") return `<div class="obj">${renderObj(v)}</div>`;
+  return fmtVal(v);
+}
+function renderObj(o){
+  if(typeof o!=="object"||!o) return fmtVal(o);
+  let h="";
+  for(const [k,val] of Object.entries(o)){
+    if(k==="verified") continue;
+    h+=`<div class="kv"><div class="k">${esc(catLabel(k))}</div><div class="v">${renderValue(val)}</div></div>`;
+  }
+  return h;
+}
+
+/* ---------- navigation ---------- */
+function buildNav(){
+  const nav=$("#nav"); nav.innerHTML="";
+  nav.appendChild(el("div","navsep","Overview"));
+  const all=el("div","navitem"+(STATE.cat===null?" active":""),
+    `<span>Search / All</span><span class="cnt">${totalCount()}</span>`);
+  all.onclick=()=>{STATE.cat=null;STATE.sel=null;render();};
+  nav.appendChild(all);
+  nav.appendChild(el("div","navsep","Categories"));
+  for(const k of Object.keys(DATA)){
+    if(k==="meta") continue;
+    const arr=DATA[k]; if(!Array.isArray(arr)) continue;
+    const item=el("div","navitem"+(STATE.cat===k?" active":""),
+      `<span>${esc(catLabel(k))}</span><span class="cnt">${arr.length}</span>`);
+    item.onclick=()=>{STATE.cat=k;STATE.sel=null;render();};
+    nav.appendChild(item);
+  }
+}
+function totalCount(){
+  let n=0; for(const k in DATA) if(k!=="meta"&&Array.isArray(DATA[k])) n+=DATA[k].length; return n;
+}
+
+/* ---------- search index ---------- */
+let INDEX=[];
+function buildIndex(){
+  INDEX=[];
+  for(const k in DATA){
+    if(k==="meta"||!Array.isArray(DATA[k])) continue;
+    DATA[k].forEach((obj,i)=>{
+      INDEX.push({cat:k, i, obj,
+        title:titleOf(obj), sub:subOf(obj), ver:verOf(obj),
+        hay:JSON.stringify(obj).toLowerCase()});
+    });
+  }
+}
+function matches(){
+  const q=STATE.q.trim().toLowerCase();
+  const terms=q.split(/\s+/).filter(Boolean);
+  return INDEX.filter(r=>{
+    if(STATE.cat && r.cat!==STATE.cat) return false;
+    if(STATE.ver && r.ver!==STATE.ver) return false;
+    if(terms.length && !terms.every(t=>r.hay.includes(t))) return false;
+    return true;
+  });
+}
+
+/* ---------- render ---------- */
+function render(){
+  buildNav();
+  const rows=matches();
+  $("#listtitle").textContent = STATE.cat ? catLabel(STATE.cat) : (STATE.q?"Search results":"All entries");
+  $("#listmeta").textContent = rows.length+" result"+(rows.length===1?"":"s");
+  const list=$("#list"); list.innerHTML="";
+  if(rows.length===0){ list.appendChild(el("div","empty","Nothing found.")); }
+  rows.slice(0,400).forEach(r=>{
+    const c=el("div","card"+(STATE.sel&&STATE.sel.cat===r.cat&&STATE.sel.i===r.i?" sel":""));
+    c.innerHTML=`<div class="cat">${esc(catLabel(r.cat))}</div>
+      <div class="ct">${esc(r.title)} ${verBadge(r.obj)}</div>
+      ${r.sub?`<div class="cs">${esc(r.sub)}</div>`:""}`;
+    c.onclick=()=>{STATE.sel={cat:r.cat,i:r.i};renderDetail(r.obj,r.cat);
+      document.querySelectorAll(".card.sel").forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");};
+    list.appendChild(c);
+  });
+  if(rows.length>400) list.appendChild(el("div","empty",`… ${rows.length-400} more. Refine your search.`));
+  if(STATE.sel){
+    const s=DATA[STATE.sel.cat] && DATA[STATE.sel.cat][STATE.sel.i];
+    if(s) renderDetail(s,STATE.sel.cat); else clearDetail();
+  } else clearDetail();
+}
+function clearDetail(){ $("#detail").innerHTML='<div class="empty">Select an entry.</div>'; }
+function renderDetail(obj,cat){
+  const d=$("#detail");
+  d.innerHTML =
+    `<div class="dcat">${esc(catLabel(cat))}</div>
+     <h1>${esc(titleOf(obj))}</h1>
+     ${verBadge(obj)?`<div class="dsub">${verBadge(obj)} <span style="color:var(--ink-faint)">${esc(obj.verified)}</span></div>`:""}
+     ${renderObj(stripTitle(obj))}`;
+}
+/* avoid repeating the headline field in the body */
+function stripTitle(obj){
+  const o={...obj};
+  const primary=primaryTitleField(o);
+  if(primary && primary!=="class" && primary!=="variant") delete o[primary];
+  return o;
+}
+
+/* ---------- meta ---------- */
+function renderMeta(){
+  const m=DATA.meta||{};
+  $("#metaline").textContent = [m.game, m.stand].filter(Boolean).join(" — ") +
+    (BUILD_VERSION && BUILD_VERSION[0]!=="_" ? "  ·  Build "+BUILD_VERSION : "");
+}
+
+/* ============================================================
+   Updater (patcher). Fetches a manifest.json, compares version,
+   downloads data.json, caches in localStorage (overrides embed).
+============================================================ */
+const LS_URL="mnm_update_url", LS_DATA="mnm_data", LS_VER="mnm_version";
+function openUpd(){
+  $("#updurl").value = localStorage.getItem(LS_URL)||"";
+  $("#updstatus").textContent = currentVersion()?("Current version: "+currentVersion()):"";
+  $("#modalbg").classList.add("show");
+}
+function currentVersion(){ return localStorage.getItem(LS_VER) || (BUILD_VERSION[0]!=="_"?BUILD_VERSION:""); }
+async function checkUpdate(){
+  const url=$("#updurl").value.trim();
+  const st=$("#updstatus");
+  if(!url){ st.textContent="Please enter an update URL."; return; }
+  localStorage.setItem(LS_URL,url);
+  st.textContent="Checking …";
+  try{
+    const man=await fetch(url,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});
+    const have=currentVersion();
+    if(have && man.version && String(man.version)<=String(have)){
+      st.textContent="Already up to date ("+have+").";
+      toast("Already up to date.");
+      return;
+    }
+    st.textContent="Downloading new data ("+(man.version||"?")+") …";
+    const dataUrl = new URL(man.data_url || "data.json", url).href;
+    const nd=await fetch(dataUrl,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});
+    localStorage.setItem(LS_DATA, JSON.stringify(nd));
+    localStorage.setItem(LS_VER, String(man.version||""));
+    st.textContent="Updated to "+(man.version||"?")+".";
+    toast("Update loaded — "+(man.version||"new version")+".");
+    DATA=nd; init(true);
+    setTimeout(()=>$("#modalbg").classList.remove("show"),900);
+  }catch(e){
+    st.textContent="Error: "+e.message;
+    toast("Update failed: "+e.message);
+  }
+}
+
+/* ---------- boot ---------- */
+function loadData(){
+  try{
+    const cached=localStorage.getItem(LS_DATA);
+    if(cached) return JSON.parse(cached);
+  }catch(e){}
+  if(typeof EMBEDDED_DATA==="object" && EMBEDDED_DATA && !EMBEDDED_DATA.__placeholder__)
+    return EMBEDDED_DATA;
+  return null;
+}
+function init(keepState){
+  if(!keepState){STATE={cat:null,sel:null,q:"",ver:""};}
+  buildIndex(); renderMeta(); render();
+}
+async function boot(){
+  DATA=loadData();
+  if(!DATA){
+    try{ DATA=await fetch("../data/data.json").then(r=>r.json()); }
+    catch(e){ document.body.innerHTML='<p style="color:#d99;padding:40px">No data found. Build with the build tool or provide data.json.</p>'; return; }
+  }
+  init(false);
+  $("#search").addEventListener("input",e=>{STATE.q=e.target.value;STATE.sel=null;render();});
+  $("#verfilter").addEventListener("change",e=>{STATE.ver=e.target.value;render();});
+  $("#updbtn").onclick=openUpd;
+  $("#updcancel").onclick=()=>$("#modalbg").classList.remove("show");
+  $("#updcheck").onclick=checkUpdate;
+  $("#modalbg").onclick=e=>{if(e.target.id==="modalbg")$("#modalbg").classList.remove("show");};
+  document.addEventListener("keydown",e=>{
+    if(e.key==="/"&&document.activeElement!==$("#search")){e.preventDefault();$("#search").focus();}
+    if(e.key==="Escape"){$("#modalbg").classList.remove("show");}
+  });
+}
+boot();
+</script>
+</body>
+</html>
