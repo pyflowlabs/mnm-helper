@@ -26,6 +26,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "data" / "data.json"
 TEMPLATE = ROOT / "app" / "template.html"
 DIST = ROOT / "dist"
+DOCS = ROOT / "docs"  # served by GitHub Pages (fixed link to open the app)
 MANIFEST = ROOT / "manifest.json"
 
 
@@ -78,9 +79,14 @@ def main():
     out_html = DIST / "MnM-Helper.html"
     out_html.write_text(html, encoding="utf-8")
 
+    # GitHub Pages copy: index.html so the site root opens the app directly.
+    DOCS.mkdir(exist_ok=True)
+    (DOCS / "index.html").write_text(html, encoding="utf-8")
+
     sha = hashlib.sha256(raw.encode("utf-8")).hexdigest()
     if not args.no_copy:
         shutil.copy2(DATA, DIST / "data.json")
+        shutil.copy2(DATA, DOCS / "data.json")
 
     manifest = {
         "version": version,
@@ -94,6 +100,7 @@ def main():
     }
     MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     shutil.copy2(MANIFEST, DIST / "manifest.json")
+    shutil.copy2(MANIFEST, DOCS / "manifest.json")
 
     total = sum(len(v) for v in data.values() if isinstance(v, list))
     print(f"built  {out_html}")
