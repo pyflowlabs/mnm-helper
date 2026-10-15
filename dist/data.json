@@ -33,7 +33,9 @@
     },
     {
       "class": "Druid",
-      "url": "https://claude.ai/code/artifact/9f43dc53-79b6-40f9-9a41-38aaede7615b"
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/druid.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
     },
     {
       "class": "Ranger",

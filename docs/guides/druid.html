@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Druid-Guide — Monsters &amp; Memories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#140f0a; --panel:#211a11; --panel2:#2a2015; --line:#3c2e1c; --line2:#4f3c23;
+    --ink:#efe3cc; --ink-dim:#c3b291; --ink-faint:#93815f;
+    --gold:#e9b25c; --gold-hi:#f6cf84; --gold-dim:#b98a3c; --ember:#df7a26;
+    --serif:'IM Fell English',Georgia,'Times New Roman',serif;
+    --serifsc:'IM Fell English SC','IM Fell English',Georgia,serif;
+    --sans:'Inter','Segoe UI',system-ui,sans-serif;
+    --mono:'Consolas',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
+    background:radial-gradient(900px 440px at 78% -140px,rgba(233,150,62,.2),transparent 62%),
+      linear-gradient(180deg,#1b140d,#140f0a);background-attachment:fixed}
+  .page{max-width:900px;margin:0 auto;padding:30px 22px 70px}
+  h1{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1.05;margin:0 0 4px;
+    background:linear-gradient(176deg,#fbdc97 2%,#eca63f 48%,#cf6f1b 98%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-family:var(--serif);font-style:italic;color:var(--ink-dim);font-size:18px;margin-bottom:6px}
+  .role{font-family:var(--serifsc);text-transform:uppercase;letter-spacing:1px;color:var(--gold-dim);
+    font-size:12px}
+  h2{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--gold-hi);
+    margin:34px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line2)}
+  h3{font-family:var(--serif);font-weight:400;font-size:20px;color:var(--gold);margin:20px 0 4px}
+  p{margin:8px 0}
+  a{color:#cf9a52}
+  ul{margin:8px 0;padding-left:22px} li{margin:4px 0} li::marker{color:var(--gold-dim)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:6px 9px;text-align:center}
+  th{background:rgba(233,150,62,.1);font-family:var(--serifsc);text-transform:uppercase;
+    letter-spacing:.5px;color:var(--gold);font-weight:400;font-size:12px}
+  td.l{text-align:left}
+  .lead{font-size:16px;color:var(--ink)}
+  .box{background:var(--panel);border:1px solid var(--line2);border-left:3px solid var(--gold);
+    border-radius:9px;padding:12px 16px;margin:14px 0}
+  .box.tip{border-left-color:var(--ember)}
+  .box .lbl{font-family:var(--serifsc);text-transform:uppercase;letter-spacing:.8px;font-size:11px;
+    color:var(--gold-dim);display:block;margin-bottom:3px}
+  .tag{display:inline-block;font-size:10px;font-family:var(--sans);font-weight:600;padding:2px 8px;
+    border-radius:10px;text-transform:uppercase;letter-spacing:.5px;vertical-align:middle}
+  .t-wiki{background:#473a1d;color:#e6c572;border:1px solid #6f5929}
+  .t-official{background:#20314a;color:#93bbe9;border:1px solid #395a82}
+  .t-derived{background:#3e2b2b;color:#dca4a4;border:1px solid #6f4343}
+  .stat{font-family:var(--mono);color:var(--gold-hi)}
+  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;
+    color:var(--ink-faint)}
+  footer a{color:var(--gold-dim)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="role">Class Guide · Monsters &amp; Memories</div>
+  <h1>Druid</h1>
+  <div class="sub">Ein Naturkundiger, der mit der Wildnis kommuniziert und mächtige Natur- und Heilmagie entfesselt.</div>
+  <p><span class="tag t-wiki">wiki</span> <span class="tag t-official">official</span> <span class="tag t-derived">derived = Einschätzung</span></p>
+
+  <h2>Überblick</h2>
+  <p class="lead">Druiden sind Beschützer des natürlichen Gleichgewichts von Eth-ur und in erster Linie Zauberwirker. Sie sind starke Heiler, geschickte Verstärker (Buffer) und durchaus fähige Schadenszauberer, die sich der zerstörerischen Kräfte der Natur bedienen. Ihre Vielseitigkeit erlaubt ihnen, in Gruppen viele Rollen auszufüllen — und dank ihres Werkzeugkastens gehören sie zu den stärksten Solo-Klassen.</p>
+  <ul>
+    <li><b>Rollen:</b> Heiler, Buffer/Debuffer, Natur-Schadenszauberer, Solist.</li>
+    <li><b>Rüstung:</b> Leder.</li>
+    <li><b>Waffen:</b> Stumpfe Waffen sowie spezialisierte Klingen wie Sicheln und Krummsäbel (Scimitars).</li>
+    <li><b>Reisen:</b> Druiden können über <em>Wyrd-Gates</em> / Druidenringe durch das „Wyrding" zwischen den Ebenen teleportieren — ein starkes Reise-Werkzeug für die Gruppe.</li>
+    <li><b>Besonderheit:</b> das <b>Seasons-System</b> (siehe unten), mit dem sich der Druid flexibel auf Heilung oder Schaden spezialisiert.</li>
+  </ul>
+
+  <h2>Charaktererstellung</h2>
+  <p>Klassen-Modifikator auf die Rassen-Grundwerte: <span class="stat">+2 AGI, +4 WIS, +2 CHA</span>.</p>
+
+  <h3>Rassenwahl nach Statuswerten</h3>
+  <p>Rassen-Grundwerte (vor dem Klassen-Modifikator), laut Wiki:</p>
+  <table>
+    <tr><th>Rasse</th><th>STR</th><th>STA</th><th>DEX</th><th>AGI</th><th>INT</th><th>WIS</th><th>CHA</th><th>Bonus</th></tr>
+    <tr><td class="l">Deep Gnome</td><td>14</td><td>15</td><td>18</td><td>20</td><td>19</td><td>18</td><td>18</td><td>10</td></tr>
+    <tr><td class="l">Goblin</td><td>15</td><td>15</td><td>19</td><td>21</td><td>17</td><td>20</td><td>15</td><td>10</td></tr>
+    <tr><td class="l">Halfling</td><td>15</td><td>17</td><td>16</td><td>19</td><td>14</td><td>24</td><td>17</td><td>10</td></tr>
+    <tr><td class="l">Human</td><td>16</td><td>17</td><td>16</td><td>18</td><td>16</td><td>20</td><td>19</td><td>10</td></tr>
+    <tr><td class="l">Troll</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td><td>?</td><td>10</td></tr>
+    <tr><td class="l">Wood Elf</td><td>14</td><td>14</td><td>18</td><td>22</td><td>15</td><td>21</td><td>18</td><td>10</td></tr>
+  </table>
+  <p style="font-size:13px;color:var(--ink-faint)">Troll-Werte im Wiki noch nicht erfasst.</p>
+
+  <h3>Bonuspunkte</h3>
+  <p>Wisdom ist das Hauptattribut des Druiden — es bestimmt die Wirksamkeit der Heilzauber und das gesamte Mana. Priorisiere also WIS, wo immer möglich. Danach Charisma (hilft u. a. der Charm-Linie und einigen weiteren Zauberlinien). Übrige Punkte in Dexterity (verbessert die Trefferrate allgemein und erhöht die Proc-Chance).</p>
+  <p>Empfohlene Verteilung laut Wiki:</p>
+  <ul>
+    <li><b>Goblin:</b> +1 DEX, +6 WIS, +3 CHA</li>
+    <li><b>Halfling:</b> +3 DEX, +3 WIS, +4 CHA</li>
+    <li><b>Human:</b> +2 DEX, +7 WIS, +1 CHA</li>
+    <li><b>Wood Elf:</b> +1 DEX, +7 WIS, +2 CHA</li>
+  </ul>
+  <div class="box tip"><span class="lbl">Einschätzung</span>
+    Für einen reinen Heil-/Supportfokus sind <b>Halfling</b> (höchstes WIS-Grundfeld, 24) oder <b>Human</b> (rund, hohes CHA) starke, einsteigerfreundliche Wahlen. <b>Wood Elf</b> passt thematisch (die ersten Druiden waren Waldelfen) und bietet ebenfalls hohes WIS/AGI. Maximiere bei der Erstellung WIS, dann CHA.</div>
+
+  <h2>Das Seasons-System</h2>
+  <p>Das Herzstück des Druiden. „Seasons" (Jahreszeiten) erlauben es, sich vorübergehend auf Heilung, Schaden oder eine Mischung zu spezialisieren. Die aktuelle Season gibt dir einen Buff — und sie ist <b>unabhängig vom Spielkalender</b>; jeder Druid in einer Gruppe kann in einer anderen Season sein.</p>
+  <table>
+    <tr><th>Season</th><th>Effekt</th><th>Rolle</th></tr>
+    <tr><td class="l">Summer</td><td class="l">+20% Heilung &amp; Regen-Wirksamkeit; Heil-Zauberlinie ab Summer's Warmth (L8)</td><td>Spezialist Heilung</td></tr>
+    <tr><td class="l">Winter</td><td class="l">+20% Schaden (Nukes &amp; DoTs); Schadens-Zauberlinie ab Winter's Chill (L8)</td><td>Spezialist Schaden</td></tr>
+    <tr><td class="l">Autumn</td><td class="l">+10% Heilung &amp; Regen, zusätzliche Mana-Regeneration</td><td>ausgewogen</td></tr>
+    <tr><td class="l">Spring</td><td class="l">+10% Schaden, zusätzliche Mana-Regeneration</td><td>ausgewogen</td></tr>
+  </table>
+
+  <h3>Wie sich die Season ändert</h3>
+  <p>Deine Season wird vollständig davon gesteuert, <b>was du wirkst</b>. Jede Season ist ein Buff mit Stapeln (max. 10). Wirkst du Zauber der aktuellen Season (z. B. Heilung im Summer), baust du Stapel auf und bleibst verankert. Wirkst du Zauber des Gegentyps, werden Stapel abgebaut; bei null endet die Season und du wechselst in die nächste. Jede neue Season startet mit <b>6 Stapeln</b>.</p>
+  <ul>
+    <li>Dedizierter Haupt-Heiler: bleibt durch konsequentes Heilen in <b>Summer</b>.</li>
+    <li>Dedizierter DPS: verankert sich durch Schaden in <b>Winter</b>.</li>
+    <li>Hybrid/Solo: zielt auf <b>Autumn</b> oder <b>Spring</b>, um beide Seiten einzuweben.</li>
+  </ul>
+
+  <h3>Mantle of Summer / Mantle of Winter</h3>
+  <p>Mit den Mantles wählst du eine Start-Season für die Spielsitzung oder springst bei Bedarf schnell in eine andere. Sie teilen sich eine <b>20-Minuten-Abklingzeit</b> und halten <b>eine Stunde</b>.</p>
+  <ul>
+    <li><b>Mantle of Summer:</b> senkt die Manakosten deiner Alteration-Zauber, erhöht die Rüstungsklasse, gewährt einen Damage Shield — und setzt deine Season auf Summer.</li>
+    <li><b>Mantle of Winter:</b> senkt die Manakosten deiner Evocation-Zauber, erhöht die Rüstungsklasse, gewährt einen Damage Shield — und setzt deine Season auf Winter.</li>
+  </ul>
+
+  <h3>Saisonale Exklusiv-Zauber</h3>
+  <ul>
+    <li><b>Summer's Warmth (L8):</b> mana-effiziente, schnell wirkende Heilung; heilt für weniger als etwa Greater Heal, wird aber durch die <em>Touch of Nature</em>-Linie deutlich verstärkt.</li>
+    <li><b>Winter's Chill (L8):</b> mana-effizienter Kälte-Direktschaden; wird durch die <em>Embers</em>-DoT-Linie verstärkt.</li>
+  </ul>
+
+  <h2>Werkzeugkasten (Zauber-Highlights)</h2>
+  <p>Druiden-Zauber reichen von Stufe 1 bis 60. Einige frühe und prägende Linien:</p>
+  <ul>
+    <li><b>Direktschaden:</b> z. B. Blast of Frost (L1, 5 Kälteschaden) — dazu die Winter-Schadenslinie.</li>
+    <li><b>Heilung &amp; Regen:</b> Heilzauber plus die Touch-of-Nature-Verstärkung; im Summer besonders stark.</li>
+    <li><b>DoTs:</b> die Embers-Linie, synergiert mit Winter's Chill.</li>
+    <li><b>Utility:</b> Invisibility versus Beasts (Tarnung gegen Tiere), diverse Buffs/Augments, Resistenz-Debuffs an Gegnern, Beschwörungen von Naturwesen, Charm-Linie (profitiert von CHA).</li>
+    <li><b>Reise:</b> Teleportation über Wyrd-Gates.</li>
+  </ul>
+  <div class="box"><span class="lbl">Hinweis</span>
+    Die vollständigen Zauberlisten pro Stufe (inkl. Fundorte und Manakosten) stehen im offiziellen Wiki — der Guide hier fasst Rollen und Mechaniken zusammen, statt jede Zeile zu kopieren.</div>
+
+  <h2>Spielweise &amp; Rollen</h2>
+  <div class="box tip"><span class="lbl">Einschätzung</span>
+    <ul style="margin:4px 0">
+      <li><b>Gruppen-Heiler:</b> in Summer verankern, auf schnelle/effiziente Heilung spielen, bei Bedarf per Mantle zurücksetzen.</li>
+      <li><b>Schaden:</b> in Winter verankern, Winter's Chill + Embers kombinieren.</li>
+      <li><b>Solo/Hybrid:</b> Autumn/Spring für Mana-Regen und Flexibilität; Druiden sind durch Heilung, Schaden, Tarnung und Mobilität exzellente Solisten.</li>
+      <li><b>Gruppen-Nutzen:</b> Ports sparen der ganzen Gruppe viel Reisezeit — ein großer sozialer Wert in einem Oldschool-MMO.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Quellen: offizielles <a href="https://monstersandmemories.miraheze.org/wiki/Druid" target="_blank" rel="noopener">M&amp;M-Wiki (Druid)</a> und
+    <a href="https://monstersandmemories.com/class-druid-deep-dive" target="_blank" rel="noopener">Druid Deep Dive</a> (official).
+    Mechaniken und Werte stammen aus diesen Quellen (<span class="tag t-wiki">wiki</span>/<span class="tag t-official">official</span>); mit <span class="tag t-derived">derived</span> markierte Abschnitte sind eigene Einschätzungen und kein belegter Spielstand. Stand: Early Access, Patch 0.30.
+  </footer>
+
+</div>
+</body>
+</html>

@@ -466,12 +466,15 @@ function renderDetail(obj,cat){
   const d=$("#detail");
   if(cat==="guides" && obj.url){
     const isPdf=/\.pdf(\?|#|$)/i.test(obj.url);
+    const isHtml=/\.html?(\?|#|$)/i.test(obj.url);
+    const label = isPdf?" (PDF)" : "";
     d.innerHTML =
       `<div class="dcat">Class Guide</div>
        <h1>${esc(obj.class||titleOf(obj))}</h1>
        ${obj.note?`<div class="dsub"><span style="color:var(--ink-faint)">${esc(obj.note)}</span></div>`:""}
-       <div class="dsub"><a class="btn" href="${esc(obj.url)}" target="_blank" rel="noopener">Open guide${isPdf?" (PDF)":""} &#8599;</a></div>
+       <div class="dsub"><a class="btn" href="${esc(obj.url)}" target="_blank" rel="noopener">Open guide${label} &#8599;</a></div>
        ${isPdf?`<embed class="guidepdf" src="${esc(obj.url)}#view=FitH" type="application/pdf">`
+              :isHtml?`<iframe class="guidepdf" src="${esc(obj.url)}" title="${esc(obj.class||'Guide')} guide" loading="lazy"></iframe>`
               :`<div style="color:var(--ink-faint);font-size:13px">Opens in a new tab.</div>`}`;
     return;
   }

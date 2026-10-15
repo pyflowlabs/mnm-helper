@@ -1,11 +1,11 @@
 {
-  "version": "20261015.008",
-  "build_number": 8,
+  "version": "20261015.009",
+  "build_number": 9,
   "stand": "2026-10-15, Early Access, Patch 0.30",
   "game": "Monsters & Memories",
   "data_url": "https://raw.githubusercontent.com/pyflowlabs/mnm-helper/main/data/data.json",
-  "sha256": "c8aef9382a5728f48c674e856fd5213ab259bb0f5373f072e4bd93fcbd3d40bd",
-  "built_at": "2026-10-15T17:19:17",
+  "sha256": "0b9aa538b41b066d25fb0c90b13b461ee1d34cad6a212556a96843bc5417f920",
+  "built_at": "2026-10-15T17:38:53",
   "entries": {
     "guides": 9,
     "vendors": 7,
