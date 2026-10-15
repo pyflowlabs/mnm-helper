@@ -22,18 +22,70 @@
   },
   "guides": [
     {
+      "class": "Archer",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/archer.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
+      "class": "Bard",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/bard.pdf",
+      "format": "PDF"
+    },
+    {
+      "class": "Beastmaster",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/beastmaster.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
+      "class": "Cleric",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/cleric.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
+      "class": "Druid",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/druid.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
       "class": "Elementalist",
       "url": "https://pyflowlabs.github.io/mnm-helper/guides/elementalist.pdf",
       "format": "PDF"
     },
     {
-      "class": "Wizard",
-      "url": "https://pyflowlabs.github.io/mnm-helper/guides/wizard.pdf",
+      "class": "Enchanter",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/enchanter.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
+      "class": "Fighter",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/fighter.pdf",
       "format": "PDF"
     },
     {
-      "class": "Druid",
-      "url": "https://pyflowlabs.github.io/mnm-helper/guides/druid.html",
+      "class": "Inquisitor",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/inquisitor.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
+      "class": "Monk",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/monk.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
+    },
+    {
+      "class": "Necromancer",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/necromancer.pdf",
+      "format": "PDF"
+    },
+    {
+      "class": "Paladin",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/paladin.html",
       "format": "HTML",
       "verified": "wiki + official + derived"
     },
@@ -43,9 +95,16 @@
       "format": "PDF"
     },
     {
-      "class": "Necromancer",
-      "url": "https://pyflowlabs.github.io/mnm-helper/guides/necromancer.pdf",
-      "format": "PDF"
+      "class": "Ranger (Underdocks)",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/ranger-underdocks.pdf",
+      "format": "PDF",
+      "note": "Underdocks-specific supplement"
+    },
+    {
+      "class": "Rogue",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/rogue.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
     },
     {
       "class": "Shadow Knight",
@@ -53,20 +112,21 @@
       "format": "PDF"
     },
     {
-      "class": "Fighter",
-      "url": "https://pyflowlabs.github.io/mnm-helper/guides/fighter.pdf",
-      "format": "PDF"
+      "class": "Shaman",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/shaman.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
     },
     {
-      "class": "Bard",
-      "url": "https://pyflowlabs.github.io/mnm-helper/guides/bard.pdf",
-      "format": "PDF"
+      "class": "Spellblade",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/spellblade.html",
+      "format": "HTML",
+      "verified": "wiki + official + derived"
     },
     {
-      "class": "Ranger (Underdocks)",
-      "url": "https://pyflowlabs.github.io/mnm-helper/guides/ranger-underdocks.pdf",
-      "format": "PDF",
-      "note": "Underdocks-specific supplement"
+      "class": "Wizard",
+      "url": "https://pyflowlabs.github.io/mnm-helper/guides/wizard.pdf",
+      "format": "PDF"
     }
   ],
   "vendors": [
