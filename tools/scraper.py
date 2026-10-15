@@ -28,12 +28,14 @@ Examples:
     python tools/scraper.py import-items "Items" --write
 """
 import argparse
+import hashlib
 import html
 import json
 import pathlib
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -50,19 +52,41 @@ WIKI_API = "https://monstersandmemories.miraheze.org/w/api.php"
 
 # ----------------------------- fetching ------------------------------------
 def _cache_path(key):
-    safe = "".join(c if c.isalnum() else "_" for c in key)[:120]
-    return CACHE / (safe + ".cache")
+    # The query string before the page title is ~114 chars, so a plain
+    # truncation would collapse every title to its first few characters and
+    # make unrelated pages share one cache file. Append a hash of the full
+    # key so each distinct URL gets its own file; keep a readable prefix.
+    digest = hashlib.sha1(key.encode("utf-8")).hexdigest()[:16]
+    safe = "".join(c if c.isalnum() else "_" for c in key)[:80]
+    return CACHE / (safe + "_" + digest + ".cache")
 
 
-def fetch(url, *, use_cache=True):
-    """GET a URL politely, with on-disk caching. Returns text."""
+def fetch(url, *, use_cache=True, retries=4):
+    """GET a URL politely, with on-disk caching. Returns text.
+
+    Retries transient failures (5xx, timeouts, connection resets) with an
+    increasing backoff so one hiccup on the wiki doesn't abort a long import.
+    """
     cp = _cache_path(url)
     if use_cache and cp.exists():
         return cp.read_text(encoding="utf-8")
-    time.sleep(DELAY)
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        text = r.read().decode("utf-8", "replace")
+    for attempt in range(retries + 1):
+        time.sleep(DELAY)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                text = r.read().decode("utf-8", "replace")
+            break
+        except urllib.error.HTTPError as e:
+            if e.code < 500 or attempt == retries:
+                raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            if attempt == retries:
+                raise
+        backoff = DELAY * (2 ** attempt)
+        print(f"  retry {attempt + 1}/{retries} after {backoff:.0f}s: {url[-60:]}",
+              file=sys.stderr)
+        time.sleep(backoff)
     CACHE.mkdir(exist_ok=True)
     cp.write_text(text, encoding="utf-8")
     return text
@@ -141,26 +165,40 @@ _FLAG_FIELDS = [("magic", "MAGIC"), ("lore", "LORE"), ("unique", "UNIQUE"),
                 ("nodrop", "NODROP"), ("norent", "NORENT")]
 
 
-def _find_template(wikitext, name):
-    """Return the raw body of the first {{name ...}} template, or None.
+def _iter_templates(wikitext, name):
+    """Return the body of every {{name ...}} template in order.
 
-    Uses brace-depth counting so nested templates inside the body don't
-    terminate it early.
+    Brace-depth counting keeps nested templates from terminating a body
+    early; a name-boundary check keeps {{Quest}} from matching {{QuestNote}}.
     """
-    start = wikitext.find("{{" + name)
-    if start == -1:
-        return None
-    i, depth, n = start + 2, 1, len(wikitext)
-    while i < n and depth > 0:
-        two = wikitext[i:i + 2]
-        if two == "{{":
-            depth += 1; i += 2
-        elif two == "}}":
-            depth -= 1; i += 2
-        else:
-            i += 1
-    # body is everything after the template name, up to the closing "}}"
-    return wikitext[start + 2 + len(name):i - 2]
+    needle = "{{" + name
+    bodies, start, n = [], 0, len(wikitext)
+    while True:
+        i = wikitext.find(needle, start)
+        if i == -1:
+            break
+        after = wikitext[i + len(needle):i + len(needle) + 1]
+        if after and after not in "|}\n\r\t {":   # e.g. {{Quest vs {{QuestNote
+            start = i + len(needle)
+            continue
+        j, depth = i + 2, 1
+        while j < n and depth > 0:
+            two = wikitext[j:j + 2]
+            if two == "{{":
+                depth += 1; j += 2
+            elif two == "}}":
+                depth -= 1; j += 2
+            else:
+                j += 1
+        bodies.append(wikitext[i + 2 + len(name):j - 2])
+        start = j
+    return bodies
+
+
+def _find_template(wikitext, name):
+    """Return the raw body of the first {{name ...}} template, or None."""
+    bodies = _iter_templates(wikitext, name)
+    return bodies[0] if bodies else None
 
 
 def _parse_fields(body):
@@ -301,6 +339,197 @@ def parse_item_page(title, wikitext):
     return entry
 
 
+# ---------------- shared wikitext helpers for prose pages ------------------
+def _wikiclean(s):
+    """Flatten a chunk of wikitext to plain, readable text.
+
+    [[target|label]] -> label, [[target]] -> target, strips simple templates,
+    bold/italic marks, HTML tags and entities, and collapses whitespace.
+    """
+    s = s or ""
+    s = re.sub(r"\[\[(?:[^\]|]*\|)?([^\]|]+)\]\]", r"\1", s)   # links -> label
+    s = re.sub(r"\{\{[^{}]*\}\}", " ", s)                      # simple templates
+    s = re.sub(r"'{2,}", "", s)                                # bold / italic
+    s = re.sub(r"<[^>]+>", " ", s)                             # html tags
+    s = html.unescape(s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _links(s):
+    """Return the link labels in a chunk, skipping File:/Image:/Category:."""
+    out = []
+    for raw in re.findall(r"\[\[([^\]]+)\]\]", s or ""):
+        if re.match(r"(?i)\s*(file|image|category):", raw):
+            continue
+        label = raw.split("|")[-1].strip()
+        if label:
+            out.append(label)
+    return out
+
+
+def _dedupe(seq):
+    seen, out = set(), []
+    for x in seq:
+        if x not in seen:
+            seen.add(x)
+            out.append(x)
+    return out
+
+
+def _list_items(value):
+    """Parse a bulleted / linked infobox field into a list of clean strings."""
+    items = []
+    for line in (value or "").splitlines():
+        line = re.sub(r"^[\*\#:;]+\s*", "", line.strip())
+        if not line:
+            continue
+        links = _links(line)
+        if links:
+            items.extend(links)
+        else:
+            text = _wikiclean(line)
+            if text:
+                items.append(text)
+    return _dedupe(items)
+
+
+# --------------------- named mobs / quests / vendors -----------------------
+def parse_named_mob(title, wikitext):
+    """Parse a {{Namedmobpage}} into our named_mobs schema, or None."""
+    body = _find_template(wikitext, "Namedmobpage")
+    if body is None:
+        return None
+    f = _parse_fields(body)
+    entry = {"name": title.strip()}
+    for src, dst in (("zone", "zone"), ("location", "location"),
+                     ("level", "level"), ("respawn_time", "respawn"),
+                     ("race", "race"), ("class", "class")):
+        v = _wikiclean(f.get(src, ""))
+        if v:
+            entry[dst] = v
+    drops = _dedupe(_list_items(f.get("known_loot", ""))
+                    + _list_items(f.get("common_loot", "")))
+    if drops:
+        entry["drops"] = drops
+    faction = _wikiclean(f.get("factions", ""))
+    if faction:
+        entry["faction"] = faction
+    quests = _list_items(f.get("related_quests", ""))
+    if quests:
+        entry["related_quests"] = quests
+    entry["verified"] = "wiki"
+    return entry
+
+
+def parse_quest(title, wikitext):
+    """Parse a {{Quest}} infobox plus {{QuestNote}} steps, or None."""
+    body = _find_template(wikitext, "Quest")
+    if body is None:
+        return None
+    f = _parse_fields(body)
+    entry = {"name": _wikiclean(f.get("name", "")) or title.strip()}
+    giver = _wikiclean(f.get("quest giver", ""))
+    if giver:
+        entry["giver"] = giver
+    zone = _wikiclean(f.get("start zone", ""))
+    if zone:
+        entry["giver_location"] = zone
+    lvl = f.get("minimum level", "").strip()
+    n = _int(lvl)
+    if n is not None:
+        entry["level"] = n
+    elif _wikiclean(lvl):
+        entry["level"] = _wikiclean(lvl)
+    classes = _wikiclean(f.get("classes", ""))
+    if classes:
+        entry["class"] = classes
+    races = _wikiclean(f.get("races", ""))
+    if races:
+        entry["races"] = races
+    reward = _wikiclean(f.get("quest rewards", ""))
+    if reward:
+        entry["reward"] = reward
+    steps = [_wikiclean(b.lstrip("|")) for b in _iter_templates(wikitext, "QuestNote")]
+    steps = [s for s in steps if s]
+    if steps:
+        entry["steps"] = steps
+    related = _list_items(f.get("related items", ""))
+    if related:
+        entry["related_items"] = related
+    entry["verified"] = "wiki"
+    return entry
+
+
+def parse_merchant(title, wikitext):
+    """Parse a {{Merchantpage}} into our vendors schema, or None.
+
+    The wiki lists what a merchant sells/buys but not prices, so `sells`
+    entries carry only the item name; we never invent a price.
+    """
+    body = _find_template(wikitext, "Merchantpage")
+    if body is None:
+        return None
+    f = _parse_fields(body)
+    entry = {"name": title.strip()}
+    zone = _wikiclean(f.get("zone", ""))
+    if zone:
+        entry["zone"] = zone
+    location = _wikiclean(f.get("location", ""))
+    if location:
+        entry["location"] = location
+    race = _wikiclean(f.get("race", ""))
+    if race:
+        entry["race"] = race
+    sells = [{"item": x} for x in _list_items(f.get("sells", ""))]
+    if sells:
+        entry["sells"] = sells
+    buys = _list_items(f.get("buys", ""))
+    if buys:
+        entry["buys"] = buys
+    entry["verified"] = "wiki"
+    return entry
+
+
+def _set_description(wikitext):
+    """First real prose paragraph of an armour-set page (drops/where info)."""
+    t = re.sub(r"\{\{[^{}]*\}\}", " ", wikitext)
+    t = re.sub(r"<ul.*?</ul>", " ", t, flags=re.S | re.I)
+    t = re.sub(r"<li>.*?</li>", " ", t, flags=re.S | re.I)
+    t = re.sub(r"\[\[Category:[^\]]*\]\]", " ", t)
+    for para in re.split(r"\n\s*\n", t):
+        clean = _wikiclean(para)
+        if len(clean) > 20:
+            return clean
+    return None
+
+
+def parse_armor_set(title, wikitext):
+    """Parse an armour-set page into our armor_sets schema, or None.
+
+    Set pages aren't a uniform template: they list the pieces in a
+    <li>[[piece]]</li> list (or * bullets) with a prose line on where they
+    come from. No pieces found -> not a real set page -> None.
+    """
+    pieces = []
+    for li in re.findall(r"<li>(.*?)</li>", wikitext, re.S | re.I):
+        pieces.extend(_links(li))
+    if not pieces:
+        for line in wikitext.splitlines():
+            if line.strip().startswith("*"):
+                pieces.extend(_links(line))
+    pieces = _dedupe(pieces)
+    if not pieces:
+        return None
+    entry = {"name": title.strip(), "pieces": pieces}
+    desc = _set_description(wikitext)
+    if desc:
+        entry["desc"] = desc
+    if re.search(r"\{\{\s*RemovedFromGame\s*\}\}", wikitext, re.I):
+        entry["flags"] = "REMOVED"
+    entry["verified"] = "wiki"
+    return entry
+
+
 # ------------------------------- merging -----------------------------------
 def _norm(s):
     return "".join(ch for ch in str(s).lower() if ch.isalnum())
@@ -335,6 +564,40 @@ def merge(category, entries, write=False):
         print("(dry-run — pass --write to save)")
 
 
+def run_import(categories, parser, data_key, write):
+    """Scrape pages from `categories`, parse each with `parser`, merge the
+    results into data.json under `data_key`."""
+    titles, seen = [], set()
+    for cat in categories:
+        for t in pages_in_category(cat):
+            if t.lower().startswith("category:") or t in seen:
+                continue
+            seen.add(t)
+            titles.append(t)
+    print(f"{len(titles)} unique pages across {len(categories)} categor"
+          f"{'y' if len(categories) == 1 else 'ies'}", file=sys.stderr)
+    entries = []
+    for t in titles:
+        e = parser(t, page_wikitext(t))
+        if e:
+            e.setdefault("verified", "wiki")
+            entries.append(e)
+    if not entries:
+        print("no entries parsed.")
+    merge(data_key, entries, write=write)
+
+
+# each import kind: (parser, data.json key, default wiki categories)
+IMPORTS = {
+    "items": (parse_item_page, "items",
+              ["Weapon", "Armor", "Jewelry", "Bags & Containers", "Inventory Items"]),
+    "mobs": (parse_named_mob, "named_mobs", ["Named Mobs"]),
+    "quests": (parse_quest, "quests", ["Quests"]),
+    "merchants": (parse_merchant, "vendors", ["Merchant"]),
+    "sets": (parse_armor_set, "armor_sets", ["Armor Sets"]),
+}
+
+
 # -------------------------------- CLI --------------------------------------
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
@@ -343,8 +606,11 @@ def main():
     sub.add_parser("categories", help="list wiki categories")
     p = sub.add_parser("pages", help="list pages in a wiki category"); p.add_argument("category")
     p = sub.add_parser("wikitext", help="dump a page's wikitext"); p.add_argument("title")
-    p = sub.add_parser("import-items", help="scrape item categories into data.json")
-    p.add_argument("category", nargs="+"); p.add_argument("--write", action="store_true")
+    for kind in IMPORTS:
+        p = sub.add_parser(f"import-{kind}",
+                           help=f"scrape {kind} into data.json (default categories if none given)")
+        p.add_argument("category", nargs="*")
+        p.add_argument("--write", action="store_true")
     args = ap.parse_args()
 
     if args.cmd == "categories":
@@ -355,25 +621,9 @@ def main():
             print(t)
     elif args.cmd == "wikitext":
         print(page_wikitext(args.title))
-    elif args.cmd == "import-items":
-        titles, seen = [], set()
-        for cat in args.category:
-            for t in pages_in_category(cat):
-                if t.lower().startswith("category:") or t in seen:
-                    continue
-                seen.add(t)
-                titles.append(t)
-        print(f"{len(titles)} unique pages across {len(args.category)} categor"
-              f"{'y' if len(args.category) == 1 else 'ies'}", file=sys.stderr)
-        entries = []
-        for t in titles:
-            e = parse_item_page(t, page_wikitext(t))
-            if e:
-                e.setdefault("verified", "wiki")
-                entries.append(e)
-        if not entries:
-            print("no entries parsed — fill in parse_item_page() to extract fields.")
-        merge("items", entries, write=args.write)
+    elif args.cmd.startswith("import-"):
+        parser, data_key, default_cats = IMPORTS[args.cmd[len("import-"):]]
+        run_import(args.category or default_cats, parser, data_key, args.write)
 
 
 if __name__ == "__main__":
