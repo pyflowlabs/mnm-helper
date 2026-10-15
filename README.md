@@ -9,10 +9,16 @@ everyone can pull the latest data from the master.
 The database is just a JSON file, so it is easy to extend: add a field, add a
 category, and the app renders it without any code changes.
 
+## Links
+
+- App (always current): https://pyflowlabs.github.io/mnm-helper/
+- Update feed (paste into the app's Updates box): https://raw.githubusercontent.com/pyflowlabs/mnm-helper/main/manifest.json
+
 ## For players (clients)
 
-Open `dist/MnM-Helper.html` by double-clicking it. That's all — no install,
-works offline, runs on any machine with a browser.
+Open the link above, or double-click a saved copy of `dist/MnM-Helper.html`.
+Either way there's no install, it works offline, and it runs on any machine
+with a browser.
 
 - Type in the search box to find anything across every category.
 - Use the source dropdown to show only in-game verified data, etc.
